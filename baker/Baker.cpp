@@ -23,8 +23,11 @@ void Baker::bake_and_box(ORDER &anOrder) {
 		DONUT donut;
 		bool boxHasRoom = true;
 		while (donutsLeft>0 && boxHasRoom){
-			donutsLeft--;
 			boxHasRoom = box.addDonut(donut);
+			if(!boxHasRoom){
+				break;
+			}
+			donutsLeft--;
 		}
 		anOrder.boxes.push_back(box);
 	}
