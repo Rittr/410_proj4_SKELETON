@@ -1,3 +1,5 @@
+// Author: Chris Ritter
+
 #include <string>
 #include "stdlib.h"
 
@@ -15,30 +17,26 @@ int Waiter::getNext(ORDER &anOrder){
 	return myIO.getNext(anOrder);
 }
 
-//contains a loop that will get orders from filename one at a time
-//then puts them in order_in_Q then signals baker(s) using cv_order_inQ
-//so they can be consumed by baker(s)
-//when finished exits loop and signals baker(s) using cv_order_inQ that
-//it is done using b_WaiterIsFinished
 void Waiter::beWaiter() {
 	bool run = true;
 	int orderStatus;
 
 	while (run){
 		ORDER currentOrder;
+		//variable used to see if there are still more orders
 		orderStatus = getNext(currentOrder);
 
 		if (orderStatus==SUCCESS){
 			lock_guard<mutex> lck(mutex_order_inQ);
+			//add order to queue
 			order_in_Q.push(currentOrder);
 		}
 		else {
-			//no more orders for now, wrap up
-//			lock_guard<mutex> lck(mutex_order_inQ);
+			//no more orders, wrap up
 			b_WaiterIsFinished = true;
-//			cv_order_inQ.notify_all();
 			run = false;
 		}
+		//notify all for multiple bakers
 		cv_order_inQ.notify_all();
 	}
 }
