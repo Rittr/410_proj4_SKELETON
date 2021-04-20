@@ -26,11 +26,20 @@ void Waiter::beWaiter() {
 
 	while (run){
 		ORDER currentOrder;
-		orderStatus=this->getNext(currentOrder);
+		orderStatus = getNext(currentOrder);
 
 		if (orderStatus==SUCCESS){
-			b_WaiterIsFinished=true;
+			lock_guard<mutex> lck(mutex_order_inQ);
+			order_in_Q.push(currentOrder);
 		}
+		else {
+			//no more orders for now, wrap up
+//			lock_guard<mutex> lck(mutex_order_inQ);
+			b_WaiterIsFinished = true;
+//			cv_order_inQ.notify_all();
+			run = false;
+		}
+		cv_order_inQ.notify_all();
 	}
 }
 
